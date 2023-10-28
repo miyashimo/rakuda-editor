@@ -1,0 +1,83 @@
+﻿// utilities
+
+// テキスト
+// -----------------------------------------------------------
+.admin-text-red {
+    color: $admin_color_red;
+}
+.admin-text-blue {
+    color: $admin_color_blue;
+}
+.admin-text-grey {
+    color: $admin_color_grey;
+}
+.admin-text-success {
+    color: $admin_color_success;
+}
+.admin-text-warning {
+    color: $admin_color_warning;
+}
+.admin-text-danger {
+    color: $admin_color_danger;
+}
+
+// マージン
+// -----------------------------------------------------------
+@for $i from 0 through 6 {
+    $number : $i * 5;
+    .admin-mgn-#{$number} {
+        margin: #{$number}px !important;
+    }
+    .admin-mgn-top-#{$number} {
+        margin-top: #{$number}px !important;
+    }
+    .admin-mgn-rgt-#{$number} {
+        margin-right: #{$number}px !important;
+    }
+    .admin-mgn-btm-#{$number} {
+        margin-bottom: #{$number}px !important;
+    }
+    .admin-mgn-lft-#{$number} {
+        margin-left: #{$number}px !important;
+    }
+}
+// パディング
+// -----------------------------------------------------------
+@for $i from 0 through 6 {
+    $number : $i * 5;
+    .admin-pdg-#{$number} {
+        padding: #{$number}px !important;
+    }
+    .admin-pdg-top-#{$number} {
+        padding-top: #{$number}px !important;
+    }
+    .admin-pdg-rgt-#{$number} {
+        padding-right: #{$number}px !important;
+    }
+    .admin-pdg-btm-#{$number} {
+        padding-bottom: #{$number}px !important;
+    }
+    .admin-pdg-lft-#{$number} {
+        padding-left: #{$number}px !important;
+    }
+}
+
+
+// nowrap
+// -----------------------------------------------------------
+.nowrap {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+// text-align
+// -----------------------------------------------------------
+.admin-text-left {
+    text-align: left;
+}
+.admin-text-center {
+    text-align: center;
+}
+.admin-text-right {
+    text-align: right;
+}

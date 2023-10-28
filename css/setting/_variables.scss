@@ -1,0 +1,66 @@
+// フォント
+$admin_font_size: 14px;
+$admin_font_size_large: 16px;
+$admin_font_weight: 400;
+$admin_font_weight_bold: 700;
+$admin_font_family:'Noto Sans JP', sans-serif;
+
+// ヘッダーの高さ
+$admin_header_height : 50px;
+// サイドバーの横幅
+$admin_sidebar_width : 180px;
+
+// z-indexの管理
+// $z_index_nav_drawer: 1002;
+$z_index_header: 1000;
+$z_index_modal: 1060;
+$z_index_toast: 1070;
+
+// 色
+$admin_color_main:#008dab;
+$admin_color_main_light: #e5f3f6;
+$admin_color_white: #ffffff;
+$admin_color_black: #222;
+$admin_color_grey: #666666;
+$admin_color_grey_light: #fafafa;
+$admin_color_blue: #2196F3;
+$admin_color_blue_light: #eef7fe;
+$admin_color_orange: #FF9800;
+$admin_color_orange_light: #fff7eb;
+$admin_color_red: #E91E63;
+$admin_color_red_light: #fef4f8;
+
+$admin_color_light: #f8f9fa;
+$admin_color_dark: #343a40;
+
+$admin_color_success: $admin_color_blue;
+$admin_color_sucsess_light: $admin_color_blue_light;
+$admin_color_warning: $admin_color_orange;
+$admin_color_warning_light: $admin_color_orange_light;
+$admin_color_danger: $admin_color_red;
+$admin_color_danger_light: $admin_color_red_light;
+
+// ボーダー色(メイン)
+$admin_color_border_main: #ddd;
+// ボーダー色(サブ)
+$admin_color_border_sub: #eee;
+
+// boxshadow
+$admin_box_shadow: 0px 5px 10px rgba(#000, 0.1);
+
+// リスト＿色＿名前
+$list_color_name:
+    'main','light','dark',
+    'red','pink','purple','deeppurple','indigo',
+    'blue','lightblue','cyan','teal','green',
+    'lightgreen','lime','yellow','amber','orange',
+    'deeporange','brown','grey','bluegrey'
+;
+// リスト＿色＿コード
+$list_color_code:
+    $admin_color_main,#f8f9fa,#343a40,
+    #F44336,#E91E63,#9C27B0,#673AB7,#3F51B5,
+    #2196F3,#03A9F4,#00BCD4,#009688,#4CAF50,
+    #8BC34A,#CDDC39,#FFEB3B,#FFC107,#FF9800,
+    #FF5722,#795548,#9E9E9E,#607D8B
+;

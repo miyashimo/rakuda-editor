@@ -1,0 +1,58 @@
+/*
+ * HTML
+ * -------------------------------------------------------------------
+ */
+html {
+    position: relative;
+    height: 100%;
+}
+body {
+    font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Helvetica Neue", YuGothic, "ヒラギノ角ゴ ProN W3",
+        Hiragino Kaku Gothic ProN, Arial, "メイリオ", Meiryo, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    position: relative;
+    height: 100%;
+    font-family: $admin_font_family;
+    font-weight: 300;
+    font-size: 14px;
+    word-wrap: break-word;
+    letter-spacing: 0px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    font-family: $admin_font_family;
+}
+img {
+    vertical-align: top;
+}
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 0;
+    border-top: 1px solid #ccc;
+}
+a {
+    color: #0066c0;
+    transition: all 0.1s;
+    text-decoration: none;
+    outline: none;
+    &:hover,
+    &:focus {
+        color: darken(#0066c0, 10%);
+        text-decoration: none;
+        outline: none;
+    }
+}
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+}

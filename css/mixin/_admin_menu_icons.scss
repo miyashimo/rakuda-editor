@@ -1,0 +1,43 @@
+// admin_menu_icons
+@mixin admin_menu_icons() {
+    &.icon-dashboard {
+        &::before {
+            @include cms_icon("tachometer");
+        }
+    }
+    &.icon-blog {
+        &::before {
+            @include cms_icon("pencil");
+        }
+    }
+    &.icon-item {
+        &::before {
+            @include cms_icon("file");
+        }
+    }
+    &.icon-form {
+        &::before {
+            @include cms_icon("mail");
+        }
+    }
+    &.icon-media {
+        &::before {
+            @include cms_icon("image");
+        }
+    }
+    &.icon-user {
+        &::before {
+            @include cms_icon("user");
+        }
+    }
+    &.icon-profile {
+        &::before {
+            @include cms_icon("user-circle");
+        }
+    }
+    &.icon-config {
+        &::before {
+            @include cms_icon("cog");
+        }
+    }
+}

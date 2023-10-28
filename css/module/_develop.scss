@@ -1,0 +1,17 @@
+// develop
+.develop {
+    display: flex;
+    //height: 800px;
+    //align-items: start;
+    //justify-content: center;
+    margin: 0;
+    padding: 0;
+    .develop-left {
+        width: 50%;
+    }
+    .develop-right {
+        //border:1px solid #ddd;
+        width: 50%;
+        //padding-top: 24px;
+    }
+}

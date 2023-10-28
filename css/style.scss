@@ -1,0 +1,49 @@
+@charset "utf-8";
+
+// 変数
+@import "setting/variables";
+
+
+
+
+/*
+ * base
+ * -------------------------------------------------------------------
+ */
+// @import "base/html";
+// @import "base/utilities";
+
+/*
+ * mixin
+ * -------------------------------------------------------------------
+ */
+@import "mixin/responsive";
+@import "mixin/admin_menu_icons";
+
+// //========//
+// // shadow //
+// //========//
+// @mixin shadow {
+//     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
+// }
+// //============//
+// // transition //
+// //============//
+// @mixin transition {
+//     -webkit-transition: all 0.3s;
+//     -moz-transition: all 0.3s;
+//     -ms-transition: all 0.3s;
+//     -o-transition: all 0.3s;
+//     transition: all 0.3s;
+// }
+// @mixin transition_none {
+//     -webkit-transition: none;
+//     -moz-transition: none;
+//     -ms-transition: none;
+//     -o-transition: none;
+//     transition: none;
+// }
+
+
+@import "module/html-editor";
+@import "module/develop";
