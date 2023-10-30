@@ -8,7 +8,7 @@
     <title>HtmlEditor</title>
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="js/codemirror/lib/codemirror.css">
-    <link rel="stylesheet" href="js/codemirror/theme/mbo.css">
+    <link rel="stylesheet" href="js/codemirror/theme/blackboard.css">
     <script src="js/codemirror/lib/codemirror.js"></script>
     <script src="js/codemirror/mode/xml/xml.js"></script>
     <script src="js/beautify/beautify-html.js"></script>
@@ -41,8 +41,9 @@
 
             // テスト用のテキスト
             let sampletext = '';
-            sampletext += '<p>私も当時おもにその<b>排斥屋排斥屋<b>排斥屋</b><b>排斥屋</b><b>排斥屋</b>排斥屋排斥屋</b><b>排斥屋</b>というのの後を威張っなた。</p>';
+            sampletext += '<p>私も当時おもにその<b>排斥屋<b>排斥屋</b><b>排斥屋</b><b>排斥屋</b>排斥屋排斥屋</b><b>テキスト<u>下線</u>テキスト</b>というのの後を威張っなた。</p>';
             sampletext += '<p>勢い偶然を<b>著作方はことにこの尊重あるでしまでの</b>賑わすて得ないをは講演つかですだば、こうにはいっなけれたましです。</p>';
+            sampletext += '<p>あああああ<b>いいいいい</b><b>ううううう</b><b>えええええ</b>おおおおお</p>';
             sampletext += '畸形をあるた事もようやく当時をとにかくたなです。';
 
             sampletext += '<p>ABCDEFGabcdefg</p>';
@@ -52,14 +53,14 @@
             const codemirror = CodeMirror.fromTextArea(
                 document.getElementById('develop-output'), {
                     mode: "xml",
-                    theme: 'mbo',
+                    theme: 'blackboard',
                     indentUnit: 4,
                     lineNumbers: true, // 行番号を表示する
                     lineWrapping: false, // 行を折り返す
                     readOnly: true,
                 });
 
-            //codemirror.setSize(null, 600);
+            codemirror.setSize(null, 550);
             codemirror.setValue(html_beautify(sampletext));
 
             function editorUpdate() {
@@ -70,7 +71,6 @@
             // エディターに入力があったらHTMLコードを出力
             //document.querySelector('.html-editor-content').addEventListener('keydown', editorUpdate);
             document.querySelector('.html-editor-content').addEventListener('keyup', editorUpdate);
-
 
             // Rangeのテスト
             // let bolds = document.querySelectorAll("b");

@@ -10,61 +10,6 @@ class HtmlEditor {
     // エディター編集エリア
     editor_content = null;
 
-
-    // // エディターの入力
-    // editor_input = null;
-    // // エディターの値
-    // editor_value = null;
-
-    // // エディターID
-    // editor_id = '';
-    // // 機能ID
-    // function_id = '';
-    // // 機能種別
-    // function_type = '';
-    // // CSSクラス
-    // css_class = '';
-    // // エディターの高さ
-    // height = 500;
-    // // ステータス
-    // status = '';
-
-    // // パーツリスト
-    // editor_list_parts = [];
-    // // 装飾リスト
-    // editor_list_style = [];
-    // // アイコンリスト
-    // editor_list_icon = [];
-    // // リンクの一覧
-    // editor_list_link = [];
-    // // 吹き出しの一覧
-    // editor_list_balloon = [];
-
-    // // 色リスト
-    // editor_list_color = [
-    //     //{'name':'ライト',           'color':'light'},
-    //     //{'name':'ダーク',           'color':'dark'},
-    //     { 'name': 'レッド', 'color': 'red' },
-    //     { 'name': 'ピンク', 'color': 'pink' },
-    //     { 'name': 'パープル', 'color': 'purple' },
-    //     //{'name':'ディープパープル', 'color':'deeppurple'},
-    //     { 'name': 'インディゴ', 'color': 'indigo' },
-    //     { 'name': 'ブルー', 'color': 'blue' },
-    //     //{'name':'ライトブルー',     'color':'lightblue'},
-    //     { 'name': 'シアン', 'color': 'cyan' },
-    //     { 'name': 'ティール', 'color': 'teal' },
-    //     { 'name': 'グリーン', 'color': 'green' },
-    //     //{'name':'ライトグリーン',   'color':'lightgreen'},
-    //     { 'name': 'ライム', 'color': 'lime' },
-    //     { 'name': 'イエロー', 'color': 'yellow' },
-    //     { 'name': 'アンバー', 'color': 'amber' },
-    //     { 'name': 'オレンジ', 'color': 'orange' },
-    //     //{'name':'ディープオレンジ', 'color':'deeporange'},
-    //     { 'name': 'ブラウン', 'color': 'brown' },
-    //     { 'name': 'グレー', 'color': 'grey' },
-    //     { 'name': 'ブルーグレー', 'color': 'bluegrey' }
-    // ];
-
     // 最後のイベント
     lastevent = null;
 
@@ -90,7 +35,7 @@ class HtmlEditor {
     }
 
     /**
-     * 初期化処理
+     * initialize
      */
     initialize(params) {
 
@@ -102,6 +47,7 @@ class HtmlEditor {
         this.editor.classList.add('html-editor');
 
         // メニュー
+        /*
         const el_menu = document.createElement('div');
         el_menu.classList.add('html-editor-menu');
 
@@ -121,7 +67,7 @@ class HtmlEditor {
         this.editor.appendChild(el_menu);
 
         this.editor_menu = el_menu;
-
+        */
 
         // 編集エリアのHTMLを作成
         const el_content = document.createElement('div');
@@ -150,7 +96,7 @@ class HtmlEditor {
         let self = this;
 
         console.log('html editor:event keydown');
-        console.log('event key='+event.key);
+        console.log('event key=' + event.key);
 
         if (event.key === 'Enter') {
             console.log('enter');
@@ -178,12 +124,6 @@ class HtmlEditor {
         }
 
         self.updateContents();
-
-        // // デザイン部品のHTML設定
-        // if (this.caretInContent()) {
-        //     //self.editor_input.summernote("pasteHTML", "<br>&#xFEFF;");
-        //     event.preventDefault();
-        // }
     }
 
     /**
@@ -202,6 +142,11 @@ class HtmlEditor {
 
         // 選択範囲
         let range = selection.getRangeAt(0);
+
+        // console.log(range.startContainer);
+        // console.log(range.startContainer.nodeType);
+        // console.log(range.endContainer);
+        // console.log(range.endContainer.nodeType);
 
         // 開始・終了地点を含むノード
         let ancestor = range.commonAncestorContainer;
@@ -235,11 +180,56 @@ class HtmlEditor {
         let isCrossLines = false;
         if (contents.querySelector('p')) isCrossLines = true;
 
-        // Rangeの位置を保存する
-        this.rangeInfo.startNode = range.startContainer;
-        this.rangeInfo.startOffset = range.startOffset;
-        this.rangeInfo.endNode = range.endContainer;
-        this.rangeInfo.endOffset = range.endOffset;
+        // 選択範囲のオフセットを取得
+        let checkOffset = 0;
+        let checkStartNode = null;
+        let checkStartOffset = 0;
+        let checkEndNode = null;
+        let checkEndOffset = 0;
+
+        const checkRangeOffset = function (contents) {
+
+            // 単体のテキストノードを処理
+            if (contents.nodeType == Node.TEXT_NODE) {
+                checkStartNode = contents;
+                checkStartOffset = range.startOffset;
+                checkEndNode = contents;
+                checkEndOffset = range.endOffset;
+                return;
+            }
+
+            let node = contents.firstChild;
+            while (node) {
+                console.log(node);
+                switch (node.nodeType) {
+                    case Node.ELEMENT_NODE:
+                        checkRangeOffset(node);
+                        break;
+                    case Node.TEXT_NODE:
+                        if (node.isSameNode(range.startContainer)) {
+                            checkStartNode = node;
+                            checkStartOffset = checkOffset + range.startOffset;
+                        }
+                        if (node.isSameNode(range.endContainer)) {
+                            checkEndNode = node;
+                            checkEndOffset = checkOffset + range.endOffset;
+                        }
+                        checkOffset += node.length;
+                        break;
+                }
+                node = node.nextSibling;
+            }
+        }
+        checkRangeOffset(ancestor);
+        console.log("checkOffset:" + checkOffset);
+        console.log("checkStartOffset:" + checkStartOffset);
+        console.log("checkEndOffset:" + checkEndOffset);
+
+        // // Rangeの位置を保存する
+        // this.rangeInfo.startNode = range.startContainer;
+        // this.rangeInfo.startOffset = range.startOffset;
+        // this.rangeInfo.endNode = range.endContainer;
+        // this.rangeInfo.endOffset = range.endOffset;
 
         // クリーニング
         this.cleaningTag(selection, ancestor, tag);
@@ -257,6 +247,38 @@ class HtmlEditor {
 
         // クリーニング
         this.cleaningTag(selection, ancestor, tag);
+
+        // オフセットから選択範囲を復元する
+        const restoreRangeInfo = function (contents, startOffset, endOffset) {
+
+            // 単体のテキストノードを処理
+            if (contents.nodeType == Node.TEXT_NODE) {
+                self.rangeInfo.startNode = contents;
+                self.rangeInfo.startOffset = startOffset;
+                self.rangeInfo.endNode = contents;
+                self.rangeInfo.endOffset = endOffset;
+                return;
+            }
+
+            const nodeList = self.getNodeList(contents, [Node.TEXT_NODE]);
+            let textOffset = 0;
+            for (let i = 0; i < nodeList.length; i++) {
+                let node = nodeList[i];
+                // 開始地点を決定
+                if ((textOffset <= startOffset) && (startOffset <= textOffset + node.length)) {
+                    self.rangeInfo.startNode = node;
+                    self.rangeInfo.startOffset = startOffset - textOffset;
+                }
+                // 終了地点を決定
+                if ((textOffset <= endOffset) && (endOffset <= textOffset + node.length)) {
+                    self.rangeInfo.endNode = node;
+                    self.rangeInfo.endOffset = endOffset - textOffset;
+                }
+                textOffset += node.length;
+            }
+        }
+        restoreRangeInfo(ancestor, checkStartOffset, checkEndOffset);
+        console.log(self.rangeInfo)
 
         // Rangeの位置を復元する
         selection.removeAllRanges();
@@ -279,8 +301,6 @@ class HtmlEditor {
     wrappTag = function (selection, node, tag) {
 
         const self = this;
-
-        //exclude || (exclude = ['script', 'style', 'iframe', 'canvas']);
 
         let range = selection.getRangeAt(0);
 
@@ -327,7 +347,6 @@ class HtmlEditor {
             }
         }
     };
-
 
     /**
      * surroundTagTextNode
@@ -407,7 +426,7 @@ class HtmlEditor {
 
         // fragmentに格納
         let fragment = document.createDocumentFragment();
-        if (newBefore) fragment.appendChild(newBefore);
+        if (textBefore) fragment.appendChild(newBefore);
         if (textCenter) fragment.appendChild(newContent);
         if (textAfter) fragment.appendChild(newAfter);
 
@@ -427,111 +446,147 @@ class HtmlEditor {
     }
 
     /**
-     * 選択範囲のタグを取り除く
+     * 選択範囲のタグを除去
      * @param {Selection} selection
      * @param {Node} node
      * @param {Element} tag
      */
     trimTag = function (selection, node, tag) {
 
+        const self = this;
+
         let range = selection.getRangeAt(0);
 
-        const nodeList = this.getNodeElement(node);
+        let nodeList = [];
 
-        // 選択範囲の始点を含むノード
-        const startNode = range.startContainer;
-        // 選択範囲の始点の位置
-        const startOffset = range.startOffset;
-        // 選択範囲の終点を含むノード
-        const endNode = range.endContainer;
-        // 選択範囲の終点の位置
-        const endOffset = range.endOffset;
+        // ノード一覧を取得する
+        const getNodeList = function (contents) {
+            let node = contents.firstChild;
+            while (node) {
+                if (node.nodeType == Node.ELEMENT_NODE) {
+                    nodeList.push(node);
+                    getNodeList(node);
+                }
+                node = node.nextSibling;
+            }
+        }
+        getNodeList(node);
+
+        // // 選択範囲の始点を含むノード
+        // const startNode = range.startContainer;
+        // // 選択範囲の始点の位置
+        // const startOffset = range.startOffset;
+        // // 選択範囲の終点を含むノード
+        // const endNode = range.endContainer;
+        // // 選択範囲の終点の位置
+        // const endOffset = range.endOffset;
 
         // 単体のテキストノードを処理
         if (node.nodeType == Node.TEXT_NODE) {
             if (node.parentElement) {
-                const fragment = this.elementRepaceTag(node.parentElement, tag, startOffset, endOffset);
-                this.replaceDocumentFragment(node.parentElement, fragment);
+                console.log("単体のテキストノードを処理");
+                this.elementRepaceTag(selection, range, node.parentElement, tag);
             }
         }
 
-        // 1つの要素のみを処理する
+        // 複数のノードを処理
         if (nodeList.length > 0) {
-
             for (let i = 0; i < nodeList.length; i++) {
-
-                let child = nodeList[i];
-
-                /*
-                let isSameTag = false;
-                if (child.tagName.toLowerCase() === tag.tagName.toLowerCase()) {
-                    isSameTag = true;
-                }
-                // 選択範囲がタグの内側にある場合
-                if (isSameTag && child.isSameNode(startNode) && child.isSameNode(endNode)) {
-
-                }
-                // 同じタグの場合
-                if (isSameTag) {
-                    this.unwrap(child);
-                }
-                */
+                let node = nodeList[i];
+                this.elementRepaceTag(selection, range, node, tag);
             }
         }
     }
 
     /**
-     * Textノードを取得する
+     * ノードの配列を取得する
+     * @param {*} contents
+     * @param {Array} type
+     * @returns
      */
-    getNodeText = function (node) {
+    getNodeList = function (contents, types) {
 
-        let list = [];
+        let nodeList = [];
 
-        const find = function (node) {
-            let child = node.firstChild;
-            while (child) {
-                switch (child.nodeType) {
-                    case Node.ELEMENT_NODE:
-                        find(child);
-                        break;
-                    case Node.TEXT_NODE:
-                        list.push(child);
-                        break;
+        const recursive = function (contents) {
+
+            let node = contents.firstChild;
+
+            while (node) {
+
+                const nodeType = node.nodeType;
+                if (types.includes(nodeType)) {
+                    nodeList.push(node);
                 }
 
-                child = child.nextSibling;
+                if (nodeType == Node.ELEMENT_NODE) {
+                    recursive(node);
+                }
+
+                node = node.nextSibling;
             }
         }
 
-        find(node);
+        recursive(contents);
 
-        return list;
+        return nodeList;
     }
 
-    /**
-     * Elementノードを取得する
-     */
-    getNodeElement = function (node) {
 
-        let list = [];
+    // /**
+    //  * Textノードを取得する
+    //  */
 
-        const find = function (node) {
-            let child = node.firstChild;
-            while (child) {
-                switch (child.nodeType) {
-                    case Node.ELEMENT_NODE:
-                        list.push(child);
-                        find(child);
-                        break;
-                }
-                child = child.nextSibling;
-            }
-        }
+    // getNodeText = function (node) {
 
-        find(node);
+    //     let list = [];
 
-        return list;
-    }
+    //     const find = function (node) {
+    //         let child = node.firstChild;
+    //         while (child) {
+    //             switch (child.nodeType) {
+    //                 case Node.ELEMENT_NODE:
+    //                     find(child);
+    //                     break;
+    //                 case Node.TEXT_NODE:
+    //                     list.push(child);
+    //                     break;
+    //             }
+
+    //             child = child.nextSibling;
+    //         }
+    //     }
+
+    //     find(node);
+
+    //     return list;
+    // }
+
+    // /**
+    //  * Elementノードを取得する
+    //  */
+
+    // getNodeElement = function (node) {
+
+    //     let list = [];
+
+    //     const find = function (node) {
+    //         let child = node.firstChild;
+    //         while (child) {
+    //             switch (child.nodeType) {
+    //                 case Node.ELEMENT_NODE:
+    //                     list.push(child);
+    //                     find(child);
+    //                     break;
+    //             }
+    //             child = child.nextSibling;
+    //         }
+    //     }
+
+    //     find(node);
+
+    //     return list;
+    // }
 
     /**
      * Elementのタグを除去
@@ -545,7 +600,7 @@ class HtmlEditor {
     };
 
     /**
-     * 隣接するElementを結合
+     * 隣接するElementを結合する
      * @param {Node} node
      * @param {Element} tag
      */
@@ -556,18 +611,25 @@ class HtmlEditor {
         const tagName = tag.tagName.toLowerCase();
 
         while (node) {
-            if (!node.nextSibling) break;
-            const next = node.nextSibling;
-            if (next.nodeType != Node.ELEMENT_NODE) break;
 
-            // 隣接する同じタグを結合する
-            if (node.tagName.toLowerCase() == tagName
+            const current = node;
+            const next = node.nextSibling;
+
+            if (!next) break;
+            if (next.nodeType != Node.ELEMENT_NODE) break;
+            if (current.tagName.toLowerCase() == tagName
                 && next.tagName.toLowerCase() == tagName
             ) {
                 const newElement = document.createElement(tagName);
-                newElement.innerHTML = node.innerHTML + next.innerHTML;
-                node.parentNode.insertBefore(newElement, node);
-                node.remove();
+                while (current.firstChild) {
+                    newElement.appendChild(current.firstChild);
+                }
+                while (next.firstChild) {
+                    newElement.appendChild(next.firstChild);
+                }
+                newElement.normalize();
+                current.parentNode.insertBefore(newElement, current);
+                current.remove();
                 next.remove();
             }
             node = node.nextSibling;
@@ -575,7 +637,7 @@ class HtmlEditor {
     }
 
     /**
-     * 対象ノードをDocumentFragmentで置換
+     * 対象ノードをDocumentFragmentで置換する
      * @param {Node} node
      * @param {DocumentFragment} fragment
      */
@@ -588,56 +650,86 @@ class HtmlEditor {
 
     /**
      * Elementの選択範囲のタグを除去する
-     * @param {HTMLElement} element
+     * @param {Selection} selection
+     * @param {Range} range
+     * @param {Node} node
+     * @param {Element} tag
      * @returns
      */
-    elementRepaceTag = function (element, tag, posStart, posEnd) {
+    elementRepaceTag = function (selection, range, node, tag) {
 
-        if (element.nodeType !== Node.ELEMENT_NODE) return;
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
 
-        /*
-        // 選択範囲がタグと等しい場合
-        if (posStart == 0 && posEnd == node.textContent.length) {
-        }
-        // 選択範囲がタグの内側にある場合
-        if (posStart >= 0 || posEnd <= node.textContent.length) {
-        }
-        */
+        // 選択範囲の始点を含むノード
+        const startNode = range.startContainer.parentElement;
+        // 選択範囲の始点の位置
+        const startOffset = range.startOffset;
+        // 選択範囲の終点を含むノード
+        const endNode = range.endContainer.parentElement;
+        // 選択範囲の終点の位置
+        const endOffset = range.endOffset;
 
-        let text = element.textContent;
-        let fragment = document.createDocumentFragment();
-        let tagName = element.tagName.toLowerCase();
+        let text = node.textContent;
+
+        let posStart = 0;
+        let posEnd = text.length;
 
         let textBefore = "";
-        let textMain = "";
+        let textCenter = "";
         let textAfter = "";
 
-        if (posStart > 0) textBefore = text.slice(0, posStart);
-        textMain = text.slice(posStart, posEnd);
-        if (posEnd < text.length) textAfter = text.slice(posEnd);
+        const isStartNode = node.isSameNode(startNode);
+        const isEndNode = node.isSameNode(endNode);
 
-        let newBefore = null;
-        let newContent = null;
-        let newAfter = null;
+        // 開始ノードと終了ノードが同じ場合
+        if (isStartNode && isEndNode) {
+            console.log("開始ノードと終了ノードが同じ場合");
+            posStart = startOffset;
+            posEnd = endOffset;
+        }
+        // 開始ノードの場合
+        else if (isStartNode) {
+            console.log("開始タグの場合");
+            posStart = startOffset;
+            posEnd = text.length;
+        }
+        // 終了ノードの場合
+        else if (isEndNode) {
+            console.log("終了タグの場合");
+            posStart = 0;
+            posEnd = endOffset;
+        } else {
+            return;
+        }
 
+        // 文字列を処理する
+        if (posStart > 0) {
+            textBefore = text.slice(0, posStart);
+        }
+        textCenter = text.slice(posStart, posEnd);
+        if (posEnd < text.length) {
+            textAfter = text.slice(posEnd);
+        }
+
+        // fragmentに格納
+        let fragment = document.createDocumentFragment();
         if (textBefore) {
-            newBefore = document.createElement(tagName);
+            const newBefore = tag.cloneNode();
             newBefore.textContent = textBefore;
             fragment.appendChild(newBefore);
-        }
-
-        if (textMain) {
-            newContent = document.createTextNode(textMain);
+        };
+        if (textCenter) {
+            const newContent = document.createTextNode(textCenter);
             fragment.appendChild(newContent);
         }
-
         if (textAfter) {
-            newAfter = document.createElement(tagName);
+            const newAfter = tag.cloneNode();
             newAfter.textContent = textAfter;
             fragment.appendChild(newAfter);
         }
 
-        return fragment;
+        // ノードの置き換えを実行
+        this.replaceDocumentFragment(node, fragment);
     }
 
     /**
@@ -649,6 +741,7 @@ class HtmlEditor {
         const tagName = tag.tagName.toLowerCase();
         const reg = new RegExp(`<\/*${tagName}.*?>`, "ig");
         element.innerHTML = element.innerHTML.replace(reg, '');
+        return element;
     }
 
     /**
@@ -675,7 +768,42 @@ class HtmlEditor {
                 if (node.nodeType == Node.ELEMENT_NODE) {
                     // 1.重複するタグを削除する
                     if (node.tagName.toLowerCase() == tagName) {
-                        self.elementHtmlRemoveTag(node, tag);
+
+                        // Rangeの開始位置・終了位置が含まれているか検証する
+                        const checkNodeList = self.getNodeList(node, [Node.TEXT_NODE]);
+
+                        let offset = 0;
+                        let checkStartNode = null;
+                        let checkStartOffset = 0;
+                        let checkEndNode = null;
+                        let checkEndOffset = 0;
+
+                        for (let i = 0; i < checkNodeList.length; i++) {
+                            if (self.rangeInfo.startNode == checkNodeList[i]) {
+                                checkStartNode = checkNodeList[i];
+                                checkStartOffset = offset;
+                            }
+                            if (self.rangeInfo.endNode == checkNodeList[i]) {
+                                checkEndNode = checkNodeList[i];
+                                checkEndOffset = offset;
+                            }
+                            offset += checkNodeList[i].length;
+                        }
+
+                        // HTMLタグを削除
+                        const result = self.elementHtmlRemoveTag(node, tag);
+                        const resultNode = self.getNodeList(result, [Node.TEXT_NODE])[0];
+
+                        // Rangeの開始位置・終了位置が含まれていれば保存する
+                        if (checkStartNode) {
+                            self.rangeInfo.startNode = resultNode;
+                            self.rangeInfo.startOffset = checkStartOffset;
+                        }
+                        if (checkEndNode) {
+                            self.rangeInfo.endNode = resultNode;
+                            self.rangeInfo.endOffset = checkEndOffset;
+                        }
+                        //console.log(self.rangeInfo)
                     }
                     // 2.隣接するタグを連結する
                     self.elementJoin(node, tag);
@@ -697,7 +825,7 @@ class HtmlEditor {
     //     console.log('Summernote:onEnter():start');
     //     if (!this.check_event_continue('onEnter')) {
     //         return false;
-    //     }
+    // }
 
     // }
 
@@ -807,13 +935,16 @@ class HtmlEditor {
     /**
      * HTMLを取得する
      */
-    getContents = function(){
+    getContents = function () {
+        return this.editor_content.innerHTML;
     }
 
     /**
      * HTMLを設定する
+     * @param {String} html
      */
-    setContents = function(){
+    setContents = function (html) {
+        this.editor_content.innerHTML = html;
     }
 
     /**
@@ -825,232 +956,5 @@ class HtmlEditor {
         if (this.editor.innerHTML === '') {
             this.editor.innerHTML = '<p><br/></p>';
         }
-
-        /*
-                // 1.保存用HTML
-                let html = jQuery('<div>');
-                html.append(jQuery(this.editor_input.summernote('code')).clone(true));
-
-                // 2.編集領域
-                let $editable = this.editor.find('.cms-html-content');
-
-                // 編集可能な要素のCSSクラス
-                //--------------------------------------------
-                this.editor.find('.cms-html-content > [class^=cms-box]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-heading]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content [class^=cms-link]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-balloon]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-blogcard]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-image]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-parts]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-faq]').addClass('cms-content-editable');
-                this.editor.find('.cms-html-content > [class^=cms-table]').addClass('cms-content-editable');
-
-                // 編集可能な要素の空チェック
-                //--------------------------------------------
-                if (!this.editor.find('.cms-html-content > [class^=cms-box]').text()) {
-                    this.editor.find('.cms-html-content > [class^=cms-box]').html("&#xFEFF;")
-                }
-                if (!this.editor.find('.cms-html-content > [class^=cms-balloon] .cms-balloon-content').text()) {
-                    this.editor.find('.cms-html-content > [class^=cms-balloon] .cms-balloon-content').html("&#xFEFF;")
-                }
-
-                // HTMLのクリーンアップ
-                //--------------------------------------------
-
-                // 保存用HTMLからエディターのHTMLを除去する
-                // ※DB保存用のHTMLにのみ処理を行う
-                html.find('.cms-content-editable').each(function (index, element) {
-                    $(element).removeClass('cms-content-editable');
-                    $(element).removeAttr('contenteditable');
-                });
-                html.find('.cms-link-notitle').removeClass('cms-link-notitle');
-                for (let $i = 0; $i < this.popover_class_list.length; $i++) {
-                    html.find(this.popover_class_list[$i]).remove();
-                }
-        
-                // テキストのクリーンアップ
-                //--------------------------------------------
-                this.cleanText(html);
-                this.cleanText($editable);
-        
-                // 画像タグのクリーンアップ
-                //--------------------------------------------
-                this.cleanImage(html);
-                this.cleanImage($editable);
-        
-                // リンクタグのクリーンアップ
-                //--------------------------------------------
-                this.cleanLink(html);
-                this.cleanLink($editable);
-        
-                // テーブルタグのクリーンアップ
-                //--------------------------------------------
-                this.cleanTable(html);
-                this.cleanTable($editable);
-        
-                // 文字数カウント
-                //--------------------------------------------
-                this.editor.find('.note-status-output').html(
-                    '文字数：' + html.text().length
-                );
-        
-                // HTMLを保存する
-                //--------------------------------------------
-                let save_html = html.html();
-        
-                // テキスト内のゼロ幅非表示文字を削除する
-                save_html = save_html.replace(/[\u200B-\u200D\uFEFF]/g, '');
-        
-                // URIエンコード
-                save_html = encodeURIComponent(save_html);
-        
-                // エディターのhidden値を更新する
-                this.editor_value.find('input').val(save_html);
-        */
     }
-
-
-    // /**
-    //  * テキストのクリーンアップ
-    //  */
-    // cleanText = function (contents) {
-
-    //     // letter-spacingを除去する
-    //     contents.find('span,b').each(function (index, element) {
-    //         $(element).css('letter-spacing', '');
-    //     });
-
-    //     // 空のスタイルを除去する
-    //     contents.find('[style=""]').removeAttr('style');
-    //     // 空のクラスを除去する
-    //     contents.find('[class=""]').removeAttr('class');
-
-    //     // エディタ直下の<br>タグは除去する
-    //     contents.children("br").each(function (index, element) {
-    //         $(element).remove();
-    //     });
-
-    //     // 空の<p>タグを除去する
-    //     contents.find("p").each(function (index, element) {
-    //         // <p>タグ内が空文字、かつタグが含まれていない場合のみ<p>タグを削除する
-    //         // ※tirmでは空白文字（半角スペース、タブ）・改行文字（LF、CR）が取り除かれる
-    //         if (!$(element).text().trim() && $(element).find('*').length == 0) {
-    //             $(element).remove();
-    //         }
-    //     });
-    //     // 属性が1つもない<span>タグは除去する
-    //     contents.find("span").each(function (index, element) {
-    //         if ($(element).get(0).attributes.length == 0) {
-    //             $(element).contents().unwrap();
-    //         }
-    //     });
-    //     // 見出し
-    //     contents.find("h1,h2,h3,h4,h5,h6").each(function (index, element) {
-    //         let tagname = $(element).prop("tagName").toLowerCase();
-    //         // 見出しのCSSクラスが無ければ追加
-    //         if (!$(element).hasClass('cms-heading')) {
-    //             $(element).addClass('cms-heading');
-    //         }
-    //         // hタグのCSSクラスが無ければ追加
-    //         if (!$(element).hasClass('cms-heading-' + tagname)) {
-    //             $(element).addClass('cms-heading-' + tagname);
-    //         }
-    //         // toc-display属性が無ければ追加
-    //         if (!$(element).attr('data-toc-display')) {
-    //             $(element).attr('data-toc-display', 'on');
-    //         }
-    //     });
-    // }
-
-    // /**
-    //  * 画像タグのクリーンアップ
-    //  */
-    // cleanImage = function (contents) {
-    //     contents.find('img').each(function (index, element) {
-    //         var $image = $(element);
-    //         var naturalWidth = $image[0].naturalWidth;
-    //         var naturalHeight = $image[0].naturalHeight;
-
-    //         // 画像の横幅が取得出来ればwidth属性にセット
-    //         if ($image.attr('width') == null && naturalWidth) {
-    //             $image.attr('width', naturalWidth);
-    //         }
-    //         // 画像の縦幅が取得出来ればwidth属性にセット
-    //         if ($image.attr('height') == null && naturalHeight) {
-    //             $image.attr('height', naturalHeight);
-    //         }
-    //         // style属性にheight:auto;をセット
-    //         if ($image.attr('width') || $image.attr('height')) {
-    //             $image.css('height', 'auto');
-    //         }
-    //         // ▼条件を満たす画像のリカバリ
-    //         // ・エディタのHTMLで囲われていない
-    //         // ・classが設定されていない
-    //         if ($image.closest("[class^='cms-']").length == 0
-    //             && typeof $image.attr('class') === "undefined"
-    //             && !$image.attr('class')
-    //         ) {
-    //             // <p>タグで囲われていたら除去する
-    //             if ($image.parent('p').length > 0) {
-    //                 $image.unwrap('p');
-    //             }
-    //             // <figure>タグで囲う
-    //             $image.wrap('<figure class="cms-image">');
-    //         }
-    //     });
-    //     contents.find('.cms-image').each(function (index, element) {
-    //         let $cms_image = $(element);
-    //         // <p>タグで囲われていたら除去する
-    //         if ($cms_image.parent('p').length > 0) {
-    //             $cms_image.unwrap('p');
-    //         }
-    //     });
-    // }
-
-    // /**
-    //  * リンクのクリーンアップ
-    //  */
-    // cleanLink = function (contents) {
-    //     let linkList = this.editor_list_link;
-    //     contents.find('.cms-link').each(function (index, element) {
-    //         // リンク設定
-    //         if (linkList && $(element).attr('data-link-id')) {
-    //             let linkId = $(element).attr('data-link-id');
-    //             let linkData = linkList.find(obj => obj.link_id === linkId);
-    //             if (!linkData) {
-    //                 // リンク設定が見つからないdata属性を削除する
-    //                 $(element).removeAttr('data-link-id');
-    //             } else {
-    //                 // リンク設定が見つかった場合は上書きする
-    //                 $(element).text(linkData.link_text);
-    //                 $(element).attr('href', linkData.link_url);
-    //             }
-    //         }
-    //         // リンクに含まれるアイコン関係のCSSクラスを全て削除
-    //         $(element).removeClass(function (index, className) {
-    //             return (className.match(new RegExp('\\b' + 'cms-icon-' + '\\S+', 'g')) || []).join(' ');
-    //         });
-    //     });
-    // }
-
-    // /**
-    //  * テーブルのクリーンアップ
-    //  */
-    // cleanTable = function (contents) {
-    //     contents.find('.cms-table').each(function (index, element) {
-    //         let $cms_table = $(element);
-    //         // 空のタグにゼロ幅非表示文字を設定
-    //         $cms_table.find('th,td').each(function (index, element) {
-    //             if ($(element).html() == '') {
-    //                 $(element).html('&#xFEFF;');
-    //             }
-    //         });
-    //         // <p>タグで囲われていたら除去する
-    //         if ($cms_table.parent('p').length > 0) {
-    //             $cms_table.unwrap('p');
-    //         }
-    //     });
-    // }
-
 }
