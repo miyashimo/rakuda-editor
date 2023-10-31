@@ -481,8 +481,6 @@ class HtmlEditor {
      */
     trimTag = function (selection, node, tag) {
 
-        const self = this;
-
         let range = selection.getRangeAt(0);
 
         let nodeList = [];
@@ -503,7 +501,6 @@ class HtmlEditor {
         // 単体のテキストノードを処理
         if (node.nodeType == Node.TEXT_NODE) {
             if (node.parentElement) {
-                console.log("単体のテキストノードを処理");
                 this.elementRepaceTag(selection, range, node.parentElement, tag);
             }
         }
@@ -620,7 +617,7 @@ class HtmlEditor {
      */
     elementRepaceTag = function (selection, range, node, tag) {
 
-        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        if (node.nodeType != Node.ELEMENT_NODE) return;
 
         // 選択範囲の始点を含むノード
         const startNode = range.startContainer.parentElement;
@@ -631,6 +628,11 @@ class HtmlEditor {
         // 選択範囲の終点の位置
         const endOffset = range.endOffset;
 
+        // ノードが選択範囲に含まれなければ処理しない
+        if (selection.containsNode(node, true) == false) {
+            return;
+        }
+
         let text = node.textContent;
 
         let posStart = 0;
@@ -639,6 +641,10 @@ class HtmlEditor {
         let textBefore = "";
         let textCenter = "";
         let textAfter = "";
+
+        let newBefore = null;
+        let newContent = null;
+        let newAfter = null;
 
         const isStartNode = node.isSameNode(startNode);
         const isEndNode = node.isSameNode(endNode);
@@ -660,35 +666,29 @@ class HtmlEditor {
             console.log("終了タグの場合");
             posStart = 0;
             posEnd = endOffset;
-        } else {
-            return;
         }
 
         // 文字列を処理する
-        if (posStart > 0) {
-            textBefore = text.slice(0, posStart);
-        }
+        textBefore = text.slice(0, posStart);
         textCenter = text.slice(posStart, posEnd);
-        if (posEnd < text.length) {
-            textAfter = text.slice(posEnd);
+        textAfter = text.slice(posEnd);
+        if (textBefore) {
+            newBefore = tag.cloneNode();
+            newBefore.textContent = textBefore;
+        }
+        if (textCenter) {
+            newContent = document.createTextNode(textCenter);
+        }
+        if (textAfter) {
+            newAfter = tag.cloneNode();
+            newAfter.textContent = textAfter;
         }
 
         // fragmentに格納
         let fragment = document.createDocumentFragment();
-        if (textBefore) {
-            const newBefore = tag.cloneNode();
-            newBefore.textContent = textBefore;
-            fragment.appendChild(newBefore);
-        };
-        if (textCenter) {
-            const newContent = document.createTextNode(textCenter);
-            fragment.appendChild(newContent);
-        }
-        if (textAfter) {
-            const newAfter = tag.cloneNode();
-            newAfter.textContent = textAfter;
-            fragment.appendChild(newAfter);
-        }
+        if (newBefore) fragment.appendChild(newBefore);
+        if (newContent) fragment.appendChild(newContent);
+        if (newAfter) fragment.appendChild(newAfter);
 
         // ノードの置き換えを実行
         this.replaceDocumentFragment(node, fragment);
