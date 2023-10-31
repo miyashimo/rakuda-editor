@@ -13,6 +13,7 @@ class HtmlEditor {
     // 最後のイベント
     lastevent = null;
 
+    // rangeInfo
     rangeInfo = {
         startNode: null,
         startOffset: null,
@@ -160,25 +161,19 @@ class HtmlEditor {
         // ) return;
 
         // トグル処理の判定
-        let toggle = false;
-        if (ancestor.parentElement) {
-            const currentTag = ancestor.parentElement.tagName.toLowerCase();
-            const targetTag = tag.tagName.toLowerCase();
-            if (currentTag === targetTag) {
-                toggle = true;
-            }
-        }
-
-        //console.log(range.cloneContents());
+        const isUnwrap = self.checkUnwrap(selection, ancestor, tag);
+        console.log("isUnwrap:" + isUnwrap);
 
         // 処理の種類を判定したい
         // ・行タグをまたぐか
         // ・単体のノードか
         // ・複数のノードか
+        /*
         const contents = range.cloneContents();
         let isSingleNode = false;
         let isCrossLines = false;
         if (contents.querySelector('p')) isCrossLines = true;
+        */
 
         // 選択範囲のオフセットを取得
         let checkOffset = 0;
@@ -188,19 +183,8 @@ class HtmlEditor {
         let checkEndOffset = 0;
 
         const checkRangeOffset = function (contents) {
-
-            // 単体のテキストノードを処理
-            if (contents.nodeType == Node.TEXT_NODE) {
-                checkStartNode = contents;
-                checkStartOffset = range.startOffset;
-                checkEndNode = contents;
-                checkEndOffset = range.endOffset;
-                return;
-            }
-
             let node = contents.firstChild;
             while (node) {
-                console.log(node);
                 switch (node.nodeType) {
                     case Node.ELEMENT_NODE:
                         checkRangeOffset(node);
@@ -220,7 +204,7 @@ class HtmlEditor {
                 node = node.nextSibling;
             }
         }
-        checkRangeOffset(ancestor);
+        checkRangeOffset(this.editor_content);
         console.log("checkOffset:" + checkOffset);
         console.log("checkStartOffset:" + checkStartOffset);
         console.log("checkEndOffset:" + checkEndOffset);
@@ -234,8 +218,7 @@ class HtmlEditor {
         // クリーニング
         this.cleaningTag(selection, ancestor, tag);
 
-        // トグル処理を実行
-        if (toggle) {
+        if (isUnwrap) {
             console.log("選択範囲のタグを取り除く");
             // 選択範囲のタグを取り除く
             this.trimTag(selection, ancestor, tag);
@@ -250,34 +233,33 @@ class HtmlEditor {
 
         // オフセットから選択範囲を復元する
         const restoreRangeInfo = function (contents, startOffset, endOffset) {
-
-            // 単体のテキストノードを処理
-            if (contents.nodeType == Node.TEXT_NODE) {
-                self.rangeInfo.startNode = contents;
-                self.rangeInfo.startOffset = startOffset;
-                self.rangeInfo.endNode = contents;
-                self.rangeInfo.endOffset = endOffset;
-                return;
-            }
-
             const nodeList = self.getNodeList(contents, [Node.TEXT_NODE]);
             let textOffset = 0;
             for (let i = 0; i < nodeList.length; i++) {
                 let node = nodeList[i];
+                // console.log(node);
+                // console.log("textOffset:" + textOffset);
+                // console.log("nodeLength:" + node.length);
+                // console.log("maxLength:" + (textOffset + node.length));
                 // 開始地点を決定
                 if ((textOffset <= startOffset) && (startOffset <= textOffset + node.length)) {
+                    console.log("udpate start")
                     self.rangeInfo.startNode = node;
                     self.rangeInfo.startOffset = startOffset - textOffset;
                 }
                 // 終了地点を決定
                 if ((textOffset <= endOffset) && (endOffset <= textOffset + node.length)) {
+                    console.log("udpate end")
                     self.rangeInfo.endNode = node;
                     self.rangeInfo.endOffset = endOffset - textOffset;
+
+                    break;
                 }
                 textOffset += node.length;
             }
         }
-        restoreRangeInfo(ancestor, checkStartOffset, checkEndOffset);
+        restoreRangeInfo(this.editor_content, checkStartOffset, checkEndOffset);
+        console.log("-----")
         console.log(self.rangeInfo)
 
         // Rangeの位置を復元する
@@ -293,6 +275,61 @@ class HtmlEditor {
         )
         selection.addRange(newRange);
 
+    }
+
+    /**
+     * タグ削除の判定
+     * @param {Selection} selection
+     * @param {Node} node
+     * @param {Element} tag
+     */
+    checkUnwrap = function (selection, node, tag) {
+
+        const targetNodeType = tag.nodeType;
+        const targetTagName = tag.tagName.toLowerCase();
+
+        if (node.nodeType == Node.TEXT_NODE) {
+            // 親要素が同じタグならtrue
+            if (node.parentElement) {
+                if (targetTagName == node.parentElement.tagName.toLowerCase()) {
+                    return true;
+                }
+            }
+        } else {
+            // 対象のタグならtrue
+            if (targetTagName == node.tagName.toLowerCase()) {
+                return true;
+            }
+
+            // 選択範囲の全ての子ノードが対象のタグならtrue
+            const range = selection.getRangeAt(0);
+            const contents = range.cloneContents();
+            console.log(contents);
+            // ★選択範囲に含まれている
+            // ★
+            if (contents.childNodes) {
+                let childs = contents.childNodes;
+                let count = 0;
+                for (let i = 0; i < childs.length; i++) {
+                    const child = contents.childNodes[i];
+                    if (child.nodeType == Node.TEXT_NODE) {
+                        if (child.textContent == '') {
+                            count++;
+                        }
+                    }
+                    if (child.nodeType == Node.ELEMENT_NODE) {
+                        if (targetTagName == child.tagName.toLowerCase()) {
+                            count++;
+                        }
+                    }
+                }
+                if (count == childs.length) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -325,15 +362,6 @@ class HtmlEditor {
             }
         }
         getNodeList(node);
-
-        // // 選択範囲の始点を含むノード
-        // const startNode = range.startContainer;
-        // // 選択範囲の始点の位置
-        // const startOffset = range.startOffset;
-        // // 選択範囲の終点を含むノード
-        // const endNode = range.endContainer;
-        // // 選択範囲の終点の位置
-        // const endOffset = range.endOffset;
 
         // 単体のテキストノードを処理
         if (node.nodeType == Node.TEXT_NODE) {
@@ -472,15 +500,6 @@ class HtmlEditor {
         }
         getNodeList(node);
 
-        // // 選択範囲の始点を含むノード
-        // const startNode = range.startContainer;
-        // // 選択範囲の始点の位置
-        // const startOffset = range.startOffset;
-        // // 選択範囲の終点を含むノード
-        // const endNode = range.endContainer;
-        // // 選択範囲の終点の位置
-        // const endOffset = range.endOffset;
-
         // 単体のテキストノードを処理
         if (node.nodeType == Node.TEXT_NODE) {
             if (node.parentElement) {
@@ -531,62 +550,6 @@ class HtmlEditor {
 
         return nodeList;
     }
-
-
-    // /**
-    //  * Textノードを取得する
-    //  */
-
-    // getNodeText = function (node) {
-
-    //     let list = [];
-
-    //     const find = function (node) {
-    //         let child = node.firstChild;
-    //         while (child) {
-    //             switch (child.nodeType) {
-    //                 case Node.ELEMENT_NODE:
-    //                     find(child);
-    //                     break;
-    //                 case Node.TEXT_NODE:
-    //                     list.push(child);
-    //                     break;
-    //             }
-
-    //             child = child.nextSibling;
-    //         }
-    //     }
-
-    //     find(node);
-
-    //     return list;
-    // }
-
-    // /**
-    //  * Elementノードを取得する
-    //  */
-
-    // getNodeElement = function (node) {
-
-    //     let list = [];
-
-    //     const find = function (node) {
-    //         let child = node.firstChild;
-    //         while (child) {
-    //             switch (child.nodeType) {
-    //                 case Node.ELEMENT_NODE:
-    //                     list.push(child);
-    //                     find(child);
-    //                     break;
-    //             }
-    //             child = child.nextSibling;
-    //         }
-    //     }
-
-    //     find(node);
-
-    //     return list;
-    // }
 
     /**
      * Elementのタグを除去
@@ -654,7 +617,6 @@ class HtmlEditor {
      * @param {Range} range
      * @param {Node} node
      * @param {Element} tag
-     * @returns
      */
     elementRepaceTag = function (selection, range, node, tag) {
 
@@ -741,7 +703,6 @@ class HtmlEditor {
         const tagName = tag.tagName.toLowerCase();
         const reg = new RegExp(`<\/*${tagName}.*?>`, "ig");
         element.innerHTML = element.innerHTML.replace(reg, '');
-        return element;
     }
 
     /**
@@ -761,49 +722,12 @@ class HtmlEditor {
         const tagName = tag.tagName.toLowerCase();
 
         const recursive = function (contents) {
-
             let node = contents.firstChild;
-
             while (node) {
                 if (node.nodeType == Node.ELEMENT_NODE) {
                     // 1.重複するタグを削除する
                     if (node.tagName.toLowerCase() == tagName) {
-
-                        // Rangeの開始位置・終了位置が含まれているか検証する
-                        const checkNodeList = self.getNodeList(node, [Node.TEXT_NODE]);
-
-                        let offset = 0;
-                        let checkStartNode = null;
-                        let checkStartOffset = 0;
-                        let checkEndNode = null;
-                        let checkEndOffset = 0;
-
-                        for (let i = 0; i < checkNodeList.length; i++) {
-                            if (self.rangeInfo.startNode == checkNodeList[i]) {
-                                checkStartNode = checkNodeList[i];
-                                checkStartOffset = offset;
-                            }
-                            if (self.rangeInfo.endNode == checkNodeList[i]) {
-                                checkEndNode = checkNodeList[i];
-                                checkEndOffset = offset;
-                            }
-                            offset += checkNodeList[i].length;
-                        }
-
-                        // HTMLタグを削除
-                        const result = self.elementHtmlRemoveTag(node, tag);
-                        const resultNode = self.getNodeList(result, [Node.TEXT_NODE])[0];
-
-                        // Rangeの開始位置・終了位置が含まれていれば保存する
-                        if (checkStartNode) {
-                            self.rangeInfo.startNode = resultNode;
-                            self.rangeInfo.startOffset = checkStartOffset;
-                        }
-                        if (checkEndNode) {
-                            self.rangeInfo.endNode = resultNode;
-                            self.rangeInfo.endOffset = checkEndOffset;
-                        }
-                        //console.log(self.rangeInfo)
+                        self.elementHtmlRemoveTag(node, tag);
                     }
                     // 2.隣接するタグを連結する
                     self.elementJoin(node, tag);
